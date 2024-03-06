@@ -19,12 +19,6 @@
             android:name=".MenuActivity"
             android:exported="false" />
         <activity
-            android:name=".OptionMenu"
-            android:exported="false" />
-        <activity
-            android:name=".ProfileActivity"
-            android:exported="false" />
-        <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
