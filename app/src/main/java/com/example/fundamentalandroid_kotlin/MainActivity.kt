@@ -1,43 +1,70 @@
  package com.example.fundamentalandroid_kotlin
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import android.widget.Button
-import android.widget.TextView
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.util.concurrent.Executors
+import android.util.Log
+import android.view.View
+import android.widget.Toast
+import com.example.fundamentalandroid_kotlin.databinding.ActivityMainBinding
+import com.loopj.android.http.AsyncHttpClient
+import com.loopj.android.http.AsyncHttpResponseHandler
+import cz.msebera.android.httpclient.Header
+import org.json.JSONObject
 
  class MainActivity : AppCompatActivity() {
 
+     companion object {
+         private val TAG = MainActivity::class.java.simpleName
+     }
+     private lateinit var binding: ActivityMainBinding
+
      override fun onCreate(savedInstanceState: Bundle?) {
          super.onCreate(savedInstanceState)
-         setContentView(R.layout.activity_main)
+         binding = ActivityMainBinding.inflate(layoutInflater)
+         setContentView(binding.root)
 
-         val btnStart = findViewById<Button>(R.id.btn_start)
-         val tvStatus = findViewById<TextView>(R.id.tv_status)
+         getRandomQuote()
 
-         btnStart.setOnClickListener {
-             lifecycleScope.launch(Dispatchers.Default) {
-                 //simulate process in background thread
-                 for (i in 0..10) {
-                     delay(500)
-                     val percentage = i * 10
-                     withContext(Dispatchers.Main) {
-                         //update ui in main thread
-                         if (percentage == 100) {
-                             tvStatus.setText(R.string.task_completed)
-                         } else {
-                             tvStatus.text = String.format(getString(R.string.compressing), percentage)
-                         }
-                     }
-                 }
-             }
+         binding.btnAllQuotes.setOnClickListener {
+             startActivity(Intent(this@MainActivity, ListQuotesActivity::class.java))
          }
+     }
+
+     private fun getRandomQuote() {
+         binding.progressBar.visibility = View.VISIBLE
+         val client = AsyncHttpClient()
+         val url = "https://quote-api.dicoding.dev/random"
+         client.get(url, object : AsyncHttpResponseHandler() {
+             override fun onSuccess(statusCode: Int, headers: Array<Header>, responseBody: ByteArray) {
+                 // Jika koneksi berhasil
+                 binding.progressBar.visibility = View.INVISIBLE
+                 val result = String(responseBody)
+                 Log.d(TAG, result)
+                 try {
+                     val responseObject = JSONObject(result)
+                     val quote = responseObject.getString("en")
+                     val author = responseObject.getString("author")
+                     binding.tvQuote.text = quote
+                     binding.tvAuthor.text = author
+                 } catch (e: Exception) {
+                     Toast.makeText(this@MainActivity, e.message, Toast.LENGTH_SHORT).show()
+                     e.printStackTrace()
+                 }
+
+             }
+
+             override fun onFailure(statusCode: Int, headers: Array<Header>, responseBody: ByteArray, error: Throwable) {
+                 // Jika koneksi gagal
+                 binding.progressBar.visibility = View.INVISIBLE
+                 val errorMessage = when (statusCode) {
+                     401 -> "$statusCode : Bad Request"
+                     403 -> "$statusCode : Forbidden"
+                     404 -> "$statusCode : Not Found"
+                     else -> "$statusCode : ${error.message}"
+                 }
+                 Toast.makeText(this@MainActivity, errorMessage, Toast.LENGTH_SHORT).show()
+             }
+         })
      }
  }
