@@ -37,7 +37,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun showList() {
-        val items = fileList()
+        val items = fileList().filter { fileName -> (fileName != "profileInstalled") }.toTypedArray()
         val builder = AlertDialog.Builder(this)
         builder.setTitle("Pilih file yang diinginkan")
         builder.setItems(items) { dialog, item -> loadData(items[item].toString()) }
