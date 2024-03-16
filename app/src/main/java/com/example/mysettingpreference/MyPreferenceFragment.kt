@@ -26,5 +26,19 @@ class MyPreferenceFragment : PreferenceFragmentCompat() {
 
     override fun onCreatePreferences(bundle: Bundle?, s: String?) {
         addPreferencesFromResource(R.xml.preferences)
+        init()
+    }
+
+    private fun init() {
+        NAME = resources.getString(R.string.key_name)
+        EMAIL = resources.getString(R.string.key_email)
+        AGE = resources.getString(R.string.key_age)
+        PHONE = resources.getString(R.string.key_phone)
+        LOVE = resources.getString(R.string.key_love)
+        namePreference = findPreference<EditTextPreference> (NAME) as EditTextPreference
+        emailPreference = findPreference<EditTextPreference>(EMAIL) as EditTextPreference
+        agePreference = findPreference<EditTextPreference>(AGE) as EditTextPreference
+        phonePreference = findPreference<EditTextPreference>(PHONE) as EditTextPreference
+        isLoveMuPreference = findPreference<CheckBoxPreference>(LOVE) as CheckBoxPreference
     }
 }
